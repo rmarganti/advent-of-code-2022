@@ -1,7 +1,5 @@
 // use std::env;
 use std::env;
-use std::error::Error;
-use std::fmt;
 use std::fs;
 
 fn main() {
@@ -10,11 +8,15 @@ fn main() {
     }
 }
 
-fn do_main() -> Result<()> {
+fn do_main() -> shared::Result<()> {
     let args: Vec<String> = env::args().collect();
     let file_name = match args.get(1) {
         Some(f) => f,
-        _ => return Err(Box::new(AppError("Please supply a file name".to_string()))),
+        _ => {
+            return Err(Box::new(shared::AppError(
+                "Please supply a file name".to_string(),
+            )))
+        }
     };
 
     let contents = fs::read_to_string(file_name)?;
@@ -50,7 +52,7 @@ fn do_main() -> Result<()> {
     if let Some((idx, val)) = max_elf {
         println!("Elf {} has {} calories", idx + 1, val);
     } else {
-        return Err(Box::new(AppError(
+        return Err(Box::new(shared::AppError(
             "Unable to get calorie counts for elves".to_string(),
         )));
     }
@@ -68,16 +70,3 @@ fn do_main() -> Result<()> {
 
     Ok(())
 }
-
-#[derive(Debug)]
-struct AppError(String);
-
-impl fmt::Display for AppError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for AppError {}
-
-type Result<T> = std::result::Result<T, Box<dyn Error>>;

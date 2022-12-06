@@ -1,4 +1,4 @@
-use std::{env, error::Error, fmt, fs};
+use std::{env, fs};
 
 fn main() {
     if let Err(e) = do_main() {
@@ -6,11 +6,15 @@ fn main() {
     }
 }
 
-fn do_main() -> Result<()> {
+fn do_main() -> shared::Result<()> {
     let args: Vec<String> = env::args().collect();
     let file_name = match args.get(1) {
         Some(f) => f,
-        _ => return Err(Box::new(AppError("Please supply a file name".to_string()))),
+        _ => {
+            return Err(Box::new(shared::AppError(
+                "Please supply a file name".to_string(),
+            )))
+        }
     };
 
     let contents = fs::read_to_string(file_name)?;
@@ -42,28 +46,28 @@ type Round = (Play, Play);
 /// X -> Rock
 /// Y -> Paper
 /// Z -> Scissors
-fn parse_contents_part1(contents: &str) -> Result<Vec<Round>> {
+fn parse_contents_part1(contents: &str) -> shared::Result<Vec<Round>> {
     let result = contents
         .lines()
         .map(|line| {
             // Split a string at spaces
             let round = line.split(" ").collect::<Vec<&str>>();
 
-            let input_play = match round[0] {
+            let elf_play = match round[0] {
                 "A" => Play::Rock,
                 "B" => Play::Paper,
                 "C" => Play::Scissors,
                 play => panic!("Invalid input: {}", play),
             };
 
-            let response_play = match round[1] {
+            let user_play = match round[1] {
                 "X" => Play::Rock,
                 "Y" => Play::Paper,
                 "Z" => Play::Scissors,
                 play => panic!("Invalid response: {}", play),
             };
 
-            return (input_play, response_play);
+            return (elf_play, user_play);
         })
         .collect();
 
@@ -82,32 +86,32 @@ fn parse_contents_part1(contents: &str) -> Result<Vec<Round>> {
 /// Z -> Draw
 ///
 /// The player's response is based on the elf's play.
-fn parse_contents_part2(contents: &str) -> Result<Vec<Round>> {
+fn parse_contents_part2(contents: &str) -> shared::Result<Vec<Round>> {
     let result = contents
         .lines()
         .map(|line| {
             // Split a string at spaces
             let round = line.split(" ").collect::<Vec<&str>>();
 
-            let input_play = match round[0] {
+            let elf_play = match round[0] {
                 "A" => Play::Rock,
                 "B" => Play::Paper,
                 "C" => Play::Scissors,
                 play => panic!("Invalid input: {}", play),
             };
 
-            let response_play = match round[1] {
-                "X" => match input_play {
+            let user_play = match round[1] {
+                "X" => match elf_play {
                     Play::Rock => Play::Scissors,
                     Play::Paper => Play::Rock,
                     Play::Scissors => Play::Paper,
                 },
-                "Y" => match input_play {
+                "Y" => match elf_play {
                     Play::Rock => Play::Rock,
                     Play::Paper => Play::Paper,
                     Play::Scissors => Play::Scissors,
                 },
-                "Z" => match input_play {
+                "Z" => match elf_play {
                     Play::Rock => Play::Paper,
                     Play::Paper => Play::Scissors,
                     Play::Scissors => Play::Rock,
@@ -115,7 +119,7 @@ fn parse_contents_part2(contents: &str) -> Result<Vec<Round>> {
                 play => panic!("Invalid response: {}", play),
             };
 
-            return (input_play, response_play);
+            return (elf_play, user_play);
         })
         .collect();
 
@@ -180,16 +184,3 @@ enum RoundResult {
     Loss,
     Draw,
 }
-
-#[derive(Debug)]
-struct AppError(String);
-
-impl fmt::Display for AppError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for AppError {}
-
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
