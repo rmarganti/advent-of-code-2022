@@ -1,4 +1,5 @@
 // use std::env;
+use std::env;
 use std::error::Error;
 use std::fmt;
 use std::fs;
@@ -10,8 +11,14 @@ fn main() {
 }
 
 fn do_main() -> Result<()> {
-    let contents = fs::read_to_string("calories.txt")?;
-    let mut elf_counts: Vec<u16> = vec![];
+    let args: Vec<String> = env::args().collect();
+    let file_name = match args.get(1) {
+        Some(f) => f,
+        _ => return Err(Box::new(AppError("Please supply a file name".to_string()))),
+    };
+
+    let contents = fs::read_to_string(file_name)?;
+    let mut elf_counts: Vec<u32> = vec![];
 
     let mut current_elf_total = 0;
 
@@ -23,12 +30,16 @@ fn do_main() -> Result<()> {
             continue;
         }
 
-        let line_count = line.parse::<u16>()?;
+        let line_count = line.parse::<u32>()?;
         current_elf_total += line_count;
     }
 
     // Add final elf count to vector
     elf_counts.push(current_elf_total);
+
+    // --------------------------------
+    // Part 1
+    // --------------------------------
 
     // Find max but keep index
     let max_elf = elf_counts
@@ -39,18 +50,31 @@ fn do_main() -> Result<()> {
     if let Some((idx, val)) = max_elf {
         println!("Elf {} has {} calories", idx + 1, val);
     } else {
-        return Err(Box::new(AppError()));
+        return Err(Box::new(AppError(
+            "Unable to get calorie counts for elves".to_string(),
+        )));
     }
+
+    // --------------------------------
+    // Part 2
+    // --------------------------------
+
+    elf_counts.sort_by(|val0, val1| val1.cmp(val0));
+
+    println!("{:#?}", elf_counts);
+
+    let top_3_total: u32 = elf_counts.iter().take(3).sum();
+    println!("The top 3 elves have a total of {} calories", top_3_total);
 
     Ok(())
 }
 
 #[derive(Debug)]
-struct AppError();
+struct AppError(String);
 
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Unable to get calorie counts for elves")
+        write!(f, "{}", self.0)
     }
 }
 
