@@ -1,5 +1,3 @@
-use std::{env, fs};
-
 fn main() {
     if let Err(e) = do_main() {
         eprintln!("{}", e);
@@ -7,17 +5,7 @@ fn main() {
 }
 
 fn do_main() -> shared::Result<()> {
-    let args: Vec<String> = env::args().collect();
-    let file_name = match args.get(1) {
-        Some(f) => f,
-        _ => {
-            return Err(Box::new(shared::AppError(
-                "Please supply a file name".to_string(),
-            )))
-        }
-    };
-
-    let contents = fs::read_to_string(file_name)?;
+    let contents = shared::read_file_from_args()?;
 
     // Part 1
     let mut rounds = parse_contents_part1(&contents)?;
