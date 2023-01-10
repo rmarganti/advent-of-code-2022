@@ -10,7 +10,7 @@ fn do_main() -> shared::Result<()> {
     let contents = shared::read_file_from_args()?;
 
     // ------------------------------------------------
-    // Day 1
+    // Part 1
     // ------------------------------------------------
 
     let start_of_packet_marker = Marker::find_in_string(&contents, 4);
@@ -21,7 +21,7 @@ fn do_main() -> shared::Result<()> {
     );
 
     // ------------------------------------------------
-    // Day 2
+    // Part 2
     // ------------------------------------------------
 
     let start_of_message_marker = Marker::find_in_string(&contents, 14);
